@@ -1,0 +1,38 @@
+# dependencies
+node_modules/
+
+# environment & secrets (only .env.example is committed)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.crt
+credentials*.json
+secrets*
+
+# databases (may contain customer data)
+data/
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# user uploads (keep the folder only)
+uploads/*
+!uploads/.gitkeep
+
+# build, logs, temp, OS/editor
+dist/
+build/
+coverage/
+*.log
+npm-debug.log*
+tmp/
+.tmp/
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -1,0 +1,53 @@
+'use strict';
+// All 64 districts. Upazila/thana lists are provided for the major districts;
+// for the rest the checkout falls back to a free-text field (the admin can extend this file).
+const DISTRICTS = {
+  'Dhaka': ['Dhanmondi','Mohammadpur','Mirpur','Uttara','Gulshan','Banani','Tejgaon','Motijheel','Paltan','Ramna','Shahbag','Lalbagh','Kotwali','Sutrapur','Jatrabari','Demra','Khilgaon','Badda','Rampura','Bhatara','Cantonment','Pallabi','Kafrul','Savar','Keraniganj','Dohar','Nawabganj','Dhamrai'],
+  'Gazipur': ['Gazipur Sadar','Tongi','Kaliakair','Kaliganj','Kapasia','Sreepur'],
+  'Narayanganj': ['Narayanganj Sadar','Araihazar','Bandar','Rupganj','Sonargaon','Fatullah'],
+  'Narsingdi': ['Narsingdi Sadar','Belabo','Monohardi','Palash','Raipura','Shibpur'],
+  'Manikganj': ['Manikganj Sadar','Daulatpur','Ghior','Harirampur','Saturia','Shivalaya','Singair'],
+  'Munshiganj': ['Munshiganj Sadar','Gazaria','Lohajang','Sirajdikhan','Sreenagar','Tongibari'],
+  'Tangail': ['Tangail Sadar','Basail','Bhuapur','Delduar','Ghatail','Gopalpur','Kalihati','Madhupur','Mirzapur','Nagarpur','Sakhipur','Dhanbari'],
+  'Faridpur': ['Faridpur Sadar','Alfadanga','Bhanga','Boalmari','Charbhadrasan','Madhukhali','Nagarkanda','Sadarpur','Saltha'],
+  'Chattogram': ['Kotwali','Pahartali','Panchlaish','Double Mooring','Halishahar','Khulshi','Bakalia','Chandgaon','Patenga','Hathazari','Raozan','Sitakunda','Mirsharai','Patiya','Boalkhali','Anwara','Fatikchhari','Satkania'],
+  "Cox's Bazar": ["Cox's Bazar Sadar",'Chakaria','Teknaf','Ukhia','Ramu','Maheshkhali','Pekua','Kutubdia'],
+  'Cumilla': ['Cumilla Sadar','Cumilla Sadar Dakshin','Chandina','Daudkandi','Laksam','Muradnagar','Debidwar','Burichang','Chauddagram','Homna','Brahmanpara','Barura','Titas','Meghna','Monoharganj','Nangalkot','Lalmai'],
+  'Noakhali': ['Noakhali Sadar','Begumganj','Chatkhil','Companiganj','Hatiya','Senbagh','Sonaimuri','Subarnachar','Kabirhat'],
+  'Feni': ['Feni Sadar','Chhagalnaiya','Daganbhuiyan','Fulgazi','Parshuram','Sonagazi'],
+  'Brahmanbaria': ['Brahmanbaria Sadar','Akhaura','Ashuganj','Bancharampur','Kasba','Nabinagar','Sarail','Nasirnagar','Bijoynagar'],
+  'Sylhet': ['Sylhet Sadar','Beanibazar','Bishwanath','Companiganj','Fenchuganj','Golapganj','Gowainghat','Jaintiapur','Kanaighat','Zakiganj','Dakshin Surma','Osmani Nagar'],
+  'Moulvibazar': ['Moulvibazar Sadar','Barlekha','Juri','Kamalganj','Kulaura','Rajnagar','Sreemangal'],
+  'Habiganj': ['Habiganj Sadar','Ajmiriganj','Bahubal','Baniachong','Chunarughat','Lakhai','Madhabpur','Nabiganj','Shayestaganj'],
+  'Sunamganj': ['Sunamganj Sadar','Bishwamvarpur','Chhatak','Derai','Dharampasha','Dowarabazar','Jagannathpur','Jamalganj','Sulla','Tahirpur'],
+  'Rajshahi': ['Boalia','Motihar','Rajpara','Shah Makhdum','Paba','Bagmara','Charghat','Durgapur','Godagari','Mohanpur','Puthia','Tanore','Bagha'],
+  'Bogura': ['Bogura Sadar','Adamdighi','Dhunat','Dhupchanchia','Gabtali','Kahaloo','Nandigram','Sariakandi','Shajahanpur','Sherpur','Shibganj','Sonatala'],
+  'Pabna': ['Pabna Sadar','Atgharia','Bera','Bhangura','Chatmohar','Faridpur','Ishwardi','Santhia','Sujanagar'],
+  'Natore': ['Natore Sadar','Bagatipara','Baraigram','Gurudaspur','Lalpur','Singra'],
+  'Naogaon': ['Naogaon Sadar','Atrai','Badalgachhi','Dhamoirhat','Manda','Mohadevpur','Niamatpur','Patnitala','Porsha','Raninagar','Sapahar'],
+  'Chapainawabganj': ['Chapainawabganj Sadar','Bholahat','Gomastapur','Nachole','Shibganj'],
+  'Joypurhat': ['Joypurhat Sadar','Akkelpur','Kalai','Khetlal','Panchbibi'],
+  'Sirajganj': ['Sirajganj Sadar','Belkuchi','Chauhali','Kamarkhanda','Kazipur','Raiganj','Shahjadpur','Tarash','Ullahpara'],
+  'Khulna': ['Khulna Sadar','Sonadanga','Khalishpur','Daulatpur','Dumuria','Batiaghata','Dighalia','Phultala','Paikgachha','Rupsha','Terokhada','Koyra','Dacope'],
+  'Jashore': ['Jashore Sadar','Abhaynagar','Bagherpara','Chaugachha','Jhikargachha','Keshabpur','Manirampur','Sharsha'],
+  'Satkhira': ['Satkhira Sadar','Assasuni','Debhata','Kalaroa','Kaliganj','Shyamnagar','Tala'],
+  'Bagerhat': ['Bagerhat Sadar','Chitalmari','Fakirhat','Kachua','Mollahat','Mongla','Morrelganj','Rampal','Sarankhola'],
+  'Kushtia': ['Kushtia Sadar','Bheramara','Daulatpur','Khoksa','Kumarkhali','Mirpur'],
+  'Barishal': ['Barishal Sadar','Agailjhara','Babuganj','Bakerganj','Banaripara','Gaurnadi','Hizla','Mehendiganj','Muladi','Wazirpur'],
+  'Bhola': ['Bhola Sadar','Burhanuddin','Char Fasson','Daulatkhan','Lalmohan','Manpura','Tazumuddin'],
+  'Patuakhali': ['Patuakhali Sadar','Bauphal','Dashmina','Galachipa','Kalapara','Mirzaganj'],
+  'Rangpur': ['Rangpur Sadar','Badarganj','Gangachara','Kaunia','Mithapukur','Pirgachha','Pirganj','Taraganj'],
+  'Dinajpur': ['Dinajpur Sadar','Birampur','Birganj','Bochaganj','Chirirbandar','Fulbari','Ghoraghat','Hakimpur','Kaharole','Khansama','Nawabganj','Parbatipur'],
+  'Mymensingh': ['Mymensingh Sadar','Bhaluka','Muktagachha','Trishal','Phulpur','Gaffargaon','Ishwarganj','Nandail','Haluaghat','Fulbaria','Gauripur','Tarakanda','Dhobaura'],
+  'Jamalpur': ['Jamalpur Sadar','Bakshiganj','Dewanganj','Islampur','Madarganj','Melandaha','Sarishabari'],
+  'Kishoreganj': ['Kishoreganj Sadar','Bajitpur','Bhairab','Hossainpur','Itna','Karimganj','Katiadi','Kuliarchar','Mithamain','Nikli','Pakundia','Tarail','Austagram'],
+  // remaining districts: free-text upazila
+  'Bandarban': [], 'Rangamati': [], 'Khagrachhari': [], 'Lakshmipur': [], 'Chandpur': [],
+  'Gopalganj': [], 'Madaripur': [], 'Rajbari': [], 'Shariatpur': [], 'Netrokona': [], 'Sherpur': [],
+  'Magura': [], 'Narail': [], 'Jhenaidah': [], 'Chuadanga': [], 'Meherpur': [],
+  'Jhalokathi': [], 'Pirojpur': [], 'Barguna': [],
+  'Gaibandha': [], 'Kurigram': [], 'Lalmonirhat': [], 'Nilphamari': [], 'Panchagarh': [], 'Thakurgaon': [],
+};
+// "Inside Dhaka" for delivery-charge purposes = Dhaka district.
+const isInsideDhaka = (district) => String(district).trim().toLowerCase() === 'dhaka';
+module.exports = { DISTRICTS, isInsideDhaka };
