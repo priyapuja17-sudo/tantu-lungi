@@ -78,7 +78,7 @@ function ensureAdmin() {
     email = 'admin@lungi.test'; pw = crypto.randomBytes(9).toString('base64url'); generated = true;
   }
   A.checkPasswordStrength(pw);
-  db.prepare("INSERT INTO users(name,email,password_hash,role) VALUES ('Store Admin',?,?,'admin')").run(email.toLowerCase(), A.hashPassword(pw));
+  db.prepare("INSERT INTO users(name,email,password_hash,role) VALUES ('Store Admin',?,?,'admin')").run(email.toLowerCase(), A.hashPasswordSync(pw));
   if (generated) console.warn(`\n⚠  Created DEVELOPMENT admin  ${email} / ${pw}   (random, shown once)\n   Set ADMIN_EMAIL and ADMIN_PASSWORD (and NODE_ENV=production) for a real deployment.\n`);
   return email;
 }

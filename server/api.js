@@ -150,8 +150,8 @@ route('POST', '/api/track', (ctx) => {
 });
 
 /* ---------- auth ---------- */
-function setSession(ctx, userId) { ctx.setCookie(A.cookieHeader(A.createSession(userId), A.SESSION_DAYS * 86400)); }
-route('POST', '/api/auth/register', (ctx) => {
+async function setSession(ctx, userId) { ctx.setCookie(A.cookieHeader(await A.createSession(userId), A.SESSION_DAYS * 86400)); }
+route('POST', '/api/auth/register', async (ctx) => {
   rateLimit('reg:' + ctx.ip, 10, 3600000);
   const name = str(ctx.body.name, { min: 2, max: 100, label: 'Name' });
   const phone = reqPhone(ctx.body.phone);
@@ -159,23 +159,23 @@ route('POST', '/api/auth/register', (ctx) => {
   if (email && !isEmail(email)) throw bad('Please enter a valid email address.');
   A.checkPasswordStrength(ctx.body.password);
   if (db.prepare('SELECT 1 FROM users WHERE phone=?').get(phone) || (email && db.prepare('SELECT 1 FROM users WHERE email=?').get(email))) throw new HttpError(409, 'An account with this mobile number or email already exists.');
-  const r = db.prepare('INSERT INTO users(name,phone,email,password_hash) VALUES (?,?,?,?)').run(name, phone, email, A.hashPassword(ctx.body.password));
-  setSession(ctx, Number(r.lastInsertRowid));
+  const r = db.prepare('INSERT INTO users(name,phone,email,password_hash) VALUES (?,?,?,?)').run(name, phone, email, await A.hashPassword(ctx.body.password));
+  await setSession(ctx, Number(r.lastInsertRowid));
   return { ok: true, user: { id: Number(r.lastInsertRowid), name, phone, email, role: 'customer' } };
 });
-route('POST', '/api/auth/login', (ctx) => {
+route('POST', '/api/auth/login', async (ctx) => {
   const id = str(ctx.body.identifier, { min: 3, max: 200, label: 'Mobile or email' }).toLowerCase();
   rateLimit('login:' + ctx.ip, 20, 600000); rateLimit('loginid:' + id, 8, 600000);
   const phone = normPhone(id);
   const u = (phone && db.prepare('SELECT * FROM users WHERE phone=?').get(phone)) || db.prepare('SELECT * FROM users WHERE email=?').get(id);
   const pw = typeof ctx.body.password === 'string' ? ctx.body.password : '';
   // constant-ish time: always run a hash verify
-  const ok = A.verifyPassword(pw, u ? u.password_hash : 'scrypt$00$00');
+  const ok = await A.verifyPassword(pw, u ? u.password_hash : 'scrypt$00$00');
   if (!u || !ok || !u.active) throw new HttpError(401, 'Incorrect mobile/email or password.');
-  setSession(ctx, u.id);
+  await setSession(ctx, u.id);
   return { ok: true, user: { id: u.id, name: u.name, phone: u.phone, email: u.email, role: u.role } };
 });
-route('POST', '/api/auth/logout', (ctx) => { A.destroySession(ctx.token); ctx.setCookie(A.cookieHeader('', 0)); return { ok: true }; });
+route('POST', '/api/auth/logout', async (ctx) => { await A.destroySession(ctx.token); ctx.setCookie(A.cookieHeader('', 0)); return { ok: true }; });
 route('POST', '/api/auth/forgot', (ctx) => {
   rateLimit('forgot:' + ctx.ip, 5, 3600000);
   const id = str(ctx.body.identifier, { min: 3, max: 200, label: 'Mobile or email' }).toLowerCase();
@@ -191,13 +191,13 @@ route('POST', '/api/auth/forgot', (ctx) => {
   }
   return out;
 });
-route('POST', '/api/auth/reset', (ctx) => {
+route('POST', '/api/auth/reset', async (ctx) => {
   rateLimit('reset:' + ctx.ip, 10, 3600000);
   A.checkPasswordStrength(ctx.body.password);
   const t = String(ctx.body.token || '');
   const u = db.prepare('SELECT id FROM users WHERE reset_token_hash=? AND reset_expires>?').get(A.sha(t), Date.now());
   if (!u) throw bad('This reset link is invalid or has expired.');
-  db.prepare('UPDATE users SET password_hash=?, reset_token_hash=NULL, reset_expires=NULL WHERE id=?').run(A.hashPassword(ctx.body.password), u.id);
+  db.prepare('UPDATE users SET password_hash=?, reset_token_hash=NULL, reset_expires=NULL WHERE id=?').run(await A.hashPassword(ctx.body.password), u.id);
   db.prepare('DELETE FROM sessions WHERE user_id=?').run(u.id);
   return { ok: true };
 });
@@ -213,12 +213,12 @@ route('PUT', '/api/me', (ctx) => {
   db.prepare('UPDATE users SET name=?, email=? WHERE id=?').run(name, email, u.id);
   return { ok: true, user: { ...u, name, email } };
 });
-route('POST', '/api/me/password', (ctx) => {
+route('POST', '/api/me/password', async (ctx) => {
   const u = needUser(ctx); rateLimit('pw:' + u.id, 8, 600000);
   const row = db.prepare('SELECT password_hash FROM users WHERE id=?').get(u.id);
-  if (!A.verifyPassword(String(ctx.body.current || ''), row.password_hash)) throw new HttpError(400, 'Current password is incorrect.');
+  if (!(await A.verifyPassword(String(ctx.body.current || ''), row.password_hash))) throw new HttpError(400, 'Current password is incorrect.');
   A.checkPasswordStrength(ctx.body.password);
-  db.prepare('UPDATE users SET password_hash=? WHERE id=?').run(A.hashPassword(ctx.body.password), u.id);
+  db.prepare('UPDATE users SET password_hash=? WHERE id=?').run(await A.hashPassword(ctx.body.password), u.id);
   db.prepare('DELETE FROM sessions WHERE user_id=? AND token_hash!=?').run(u.id, A.sha(ctx.token));
   return { ok: true };
 });

@@ -194,9 +194,9 @@ route('PUT', '/api/admin/customers/:id/active', role('admin', (ctx) => {
   db.prepare("UPDATE users SET active=? WHERE id=? AND role='customer'").run(ctx.body.active ? 1 : 0, id);
   if (!ctx.body.active) db.prepare('DELETE FROM sessions WHERE user_id=?').run(id); return { ok: true };
 }));
-route('POST', '/api/admin/customers/:id/password', role('admin', (ctx) => {
+route('POST', '/api/admin/customers/:id/password', role('admin', async (ctx) => {
   A.checkPasswordStrength(ctx.body.password); const id = Number(ctx.params.id);
-  db.prepare("UPDATE users SET password_hash=? WHERE id=? AND role='customer'").run(A.hashPassword(ctx.body.password), id);
+  db.prepare("UPDATE users SET password_hash=? WHERE id=? AND role='customer'").run(await A.hashPassword(ctx.body.password), id);
   db.prepare('DELETE FROM sessions WHERE user_id=?').run(id); return { ok: true };
 }));
 
@@ -259,12 +259,12 @@ route('DELETE', '/api/admin/reviews/:id', role('manager', (ctx) => { db.prepare(
 
 /* ---------- staff accounts ---------- */
 route('GET', '/api/admin/staff', role('admin', () => ({ items: db.prepare("SELECT id,name,phone,email,role,active,created_at FROM users WHERE role!='customer' ORDER BY id").all() })));
-route('POST', '/api/admin/staff', role('admin', (ctx) => {
+route('POST', '/api/admin/staff', role('admin', async (ctx) => {
   const r = ['staff', 'manager', 'admin'].includes(ctx.body.role) ? ctx.body.role : 'staff';
   const email = str(ctx.body.email, { min: 5, max: 200, label: 'Email' }).toLowerCase(); if (!isEmail(email)) throw bad('Invalid email.');
   A.checkPasswordStrength(ctx.body.password);
   if (db.prepare('SELECT 1 FROM users WHERE email=?').get(email)) throw new HttpError(409, 'Email already in use.');
-  db.prepare('INSERT INTO users(name,email,password_hash,role) VALUES (?,?,?,?)').run(str(ctx.body.name, { min: 2, max: 100, label: 'Name' }), email, A.hashPassword(ctx.body.password), r); return { ok: true };
+  db.prepare('INSERT INTO users(name,email,password_hash,role) VALUES (?,?,?,?)').run(str(ctx.body.name, { min: 2, max: 100, label: 'Name' }), email, await A.hashPassword(ctx.body.password), r); return { ok: true };
 }));
 route('PUT', '/api/admin/staff/:id', role('admin', (ctx) => {
   const id = Number(ctx.params.id);

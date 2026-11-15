@@ -88,7 +88,7 @@ async function handle(req, res) {
   if (pathname.startsWith('/api/')) {
     const cookies = A.parseCookies(req.headers.cookie);
     const token = cookies.sid || '';
-    const ctx = { req, res, url, ip, token, user: A.userFromToken(token), query: Object.fromEntries(url.searchParams), params: {}, body: {}, _cookies: [], setCookie(c) { this._cookies.push(c); } };
+    const ctx = { req, res, url, ip, token, user: await A.userFromToken(token), query: Object.fromEntries(url.searchParams), params: {}, body: {}, _cookies: [], setCookie(c) { this._cookies.push(c); } };
     try {
       const method = req.method;
       const r = routes.find((x) => x.method === method && x.re.test(pathname));
@@ -144,6 +144,8 @@ function start(port = PORT) {
   seed.ensureCategories();
   seed.ensureAdmin();
   if (process.env.AUTO_SEED_DEMO === '1') seed.seedDemo();
+  A.purgeExpiredSessions().catch((e) => console.error('[sessions]', e.message));
+  setInterval(() => A.purgeExpiredSessions().catch(() => {}), 3600e3).unref();
   const server = http.createServer((req, res) => handle(req, res).catch((e) => { console.error(e); try { send(res, 500, 'Server error'); } catch {} }));
   return new Promise((resolve) => server.listen(port, () => { console.log(`Lungi store running on http://localhost:${server.address().port}`); resolve(server); }));
 }
