@@ -16,9 +16,13 @@ const nonCancelled = "status!='cancelled'";
 const BDT = "datetime(created_at,'+6 hours')";
 
 /* ---------- dashboard ---------- */
+const SETUP_CHECKS = [['contact_phone', 'Business phone number'], ['contact_email', 'Customer support email'], ['contact_address_en', 'Business address (English)'], ['contact_address_bn', 'Business address (Bangla)'],
+  ['whatsapp_number', 'WhatsApp number'], ['facebook_url', 'Facebook page URL'], ['instagram_url', 'Instagram URL'], ['return_policy_bn', 'Return policy (Bangla)'], ['return_policy_en', 'Return policy (English)']];
 route('GET', '/api/admin/stats', role('staff', () => {
   const one = (sql, ...a) => db.prepare(sql).get(...a);
+  const st = getSettings();
   return {
+    setup_missing: SETUP_CHECKS.filter(([k]) => !String(st[k] || '').trim()).map(([, l]) => l),
     total_sales: one(`SELECT COALESCE(SUM(total),0) n FROM orders WHERE ${nonCancelled}`).n,
     total_orders: one('SELECT COUNT(*) n FROM orders').n,
     total_customers: one("SELECT COUNT(*) n FROM users WHERE role='customer'").n,
@@ -239,7 +243,7 @@ route('PUT', '/api/admin/settings', role('manager', (ctx) => {
     for (const [k, v] of Object.entries(ctx.body || {})) {
       if (!(k in DEFAULT_SETTINGS)) continue;
       if (!MANAGER_KEYS.has(k)) A.requireRole(ctx.user, 'admin');
-      let val = str(v, { max: 300, required: false });
+      let val = str(v, { max: k.startsWith('return_policy') ? 4000 : 300, required: false });
       if (['delivery_inside_dhaka', 'delivery_outside_dhaka', 'free_delivery_over'].includes(k)) val = String(int(val === '' ? 0 : val, { min: 0, max: 100000, label: k }));
       if (k.startsWith('manual_') && val && !/^01[3-9]\d{8}$/.test(val)) throw bad('Merchant number must be a valid mobile number.');
       if (['facebook_url', 'instagram_url'].includes(k) && val && !/^https:\/\//.test(val)) throw bad('Social links must start with https://');

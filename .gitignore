@@ -20,6 +20,9 @@ data/
 *.sqlite
 *.sqlite3
 
+# database backups (contain customer data)
+backups/
+
 # user uploads (keep the folder only)
 uploads/*
 !uploads/.gitkeep

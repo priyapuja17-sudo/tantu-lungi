@@ -55,5 +55,6 @@ export const D = {
   cancel_order: ['অর্ডার বাতিল', 'Cancel order'], cancel_confirm: ['অর্ডারটি বাতিল করতে চান?', 'Cancel this order?'], welcome: ['স্বাগতম', 'Welcome'],
   wish_empty: ['আপনার উইশলিস্ট খালি', 'Your wishlist is empty'], err_phone: ['সঠিক মোবাইল নম্বর দিন (যেমন ০১৭১২৩৪৫৬৭৮)', 'Enter a valid mobile number (e.g. 01712345678)'], err_req: ['এটি আবশ্যক', 'This field is required'],
   err_net: ['সংযোগে সমস্যা। আবার চেষ্টা করুন।', 'Connection problem. Please try again.'], not_found: ['পাতাটি পাওয়া যায়নি', 'Page not found'], loading: ['লোড হচ্ছে…', 'Loading…'],
+  policy: ['রিটার্ন ও রিফান্ড নীতি', 'Return & refund policy'], policy_none: ['এই তথ্য শীঘ্রই যোগ করা হবে।', 'This information will be added soon.'],
   whatsapp: ['হোয়াটসঅ্যাপে যোগাযোগ', 'Chat on WhatsApp'], language: ['ভাষা', 'Language'],
 };

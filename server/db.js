@@ -23,10 +23,10 @@ const DEFAULT_SETTINGS = {
   hero_sub_en: 'Premium quality lungis, now at your doorstep.',
   delivery_inside_dhaka: '60', delivery_outside_dhaka: '120',
   free_delivery_over: '3000',
-  contact_phone: '+8801700000000', contact_email: 'hello@example.com',
-  contact_address_en: 'Islampur, Dhaka-1100, Bangladesh', contact_address_bn: 'ইসলামপুর, ঢাকা-১১০০, বাংলাদেশ',
-  whatsapp_number: '8801700000000',
-  facebook_url: 'https://facebook.com/', instagram_url: 'https://instagram.com/',
+  // Business details are intentionally EMPTY until the owner enters them (Admin > Settings). Empty = hidden on the storefront.
+  contact_phone: '', contact_email: '', contact_address_en: '', contact_address_bn: '',
+  whatsapp_number: '', facebook_url: '', instagram_url: '',
+  return_policy_bn: '', return_policy_en: '',
   manual_bkash_number: '', manual_nagad_number: '', manual_rocket_number: '',
 };
 const ins = db.prepare('INSERT OR IGNORE INTO settings(key,value) VALUES (?,?)');

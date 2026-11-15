@@ -74,15 +74,15 @@ function renderFooter() {
     <div class="ftr-grid">
       <div><a class="logo" href="/">${Logo()}<span><b>${isBn() ? s.store_name_bn : s.store_name_en}</b></span></a>
         <p style="margin-top:14px;max-width:30em">${isBn() ? 'ঐতিহ্য ও আরামের সেরা সমন্বয়ে প্রিমিয়াম লুঙ্গি — সারা বাংলাদেশে।' : 'Premium lungis blending heritage and comfort — across Bangladesh.'}</p>
-        <div class="social"><a href="${s.facebook_url}" target="_blank" rel="noopener noreferrer" aria-label="Facebook">${I.facebook}</a><a href="${s.instagram_url}" target="_blank" rel="noopener noreferrer" aria-label="Instagram">${I.instagram}</a><a href="https://wa.me/${esc(s.whatsapp_number)}" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">${I.whatsapp}</a></div></div>
+        <div class="social">${s.facebook_url ? html`<a href="${s.facebook_url}" target="_blank" rel="noopener noreferrer" aria-label="Facebook">${I.facebook}</a>` : ''}${s.instagram_url ? html`<a href="${s.instagram_url}" target="_blank" rel="noopener noreferrer" aria-label="Instagram">${I.instagram}</a>` : ''}${s.whatsapp_number ? html`<a href="https://wa.me/${esc(s.whatsapp_number)}" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">${I.whatsapp}</a>` : ''}</div></div>
       <div><h4>${t('categories')}</h4>${cats.slice(0, 6).map((c) => html`<a href="/c/${c.slug}">${pick(c, 'name')}</a>`)}</div>
-      <div><h4>${t('quick_links')}</h4><a href="/shop">${t('shop_all')}</a><a href="/track">${t('track')}</a><a href="/account">${t('account')}</a><a href="/wishlist">${t('wishlist')}</a></div>
-      <div><h4>${t('contact')}</h4><a href="tel:${s.contact_phone}">${s.contact_phone}</a><a href="mailto:${s.contact_email}">${s.contact_email}</a><span>${isBn() ? s.contact_address_bn : s.contact_address_en}</span>
+      <div><h4>${t('quick_links')}</h4><a href="/shop">${t('shop_all')}</a><a href="/track">${t('track')}</a><a href="/account">${t('account')}</a><a href="/wishlist">${t('wishlist')}</a>${s.return_policy_bn || s.return_policy_en ? html`<a href="/policy">${t('policy')}</a>` : ''}</div>
+      <div><h4>${t('contact')}</h4>${s.contact_phone ? html`<a href="tel:${s.contact_phone}">${s.contact_phone}</a>` : ''}${s.contact_email ? html`<a href="mailto:${s.contact_email}">${s.contact_email}</a>` : ''}<span>${(isBn() ? s.contact_address_bn || s.contact_address_en : s.contact_address_en || s.contact_address_bn) || ''}</span>
         <h4 style="margin-top:16px">${t('we_accept')}</h4><div class="paychips"><span class="paychip">${t('cod')}</span><span class="paychip">bKash</span><span class="paychip">Nagad</span><span class="paychip">Rocket</span></div></div>
     </div>
     <div class="ftr-bot"><span>© ${new Date().getFullYear()} ${isBn() ? s.store_name_bn : s.store_name_en}. ${t('rights')}</span><span>৳ BDT · Bangladesh</span></div>
   </div></footer>
-  <a class="wa" href="https://wa.me/${esc(s.whatsapp_number)}" target="_blank" rel="noopener noreferrer" aria-label="${t('whatsapp')}">${I.whatsapp}</a>`);
+  ${s.whatsapp_number ? html`<a class="wa" href="https://wa.me/${esc(s.whatsapp_number)}" target="_blank" rel="noopener noreferrer" aria-label="${t('whatsapp')}">${I.whatsapp}</a>` : ''}`);
 }
 
 /* ===================== components ===================== */
@@ -401,6 +401,10 @@ async function wishlistInto(side) {
   if (side) V(html`<div class="wrap"><div class="acct">${side}<div><h2>${t('wishlist')}</h2>${body}</div></div></div>`);
   else V(html`<div class="wrap"><div class="page-title"><h1>${t('wishlist')}</h1></div>${body}<div style="height:50px"></div></div>`);
 }
+function pagePolicy() {
+  const s = S.config.settings; const txt = (isBn() ? s.return_policy_bn || s.return_policy_en : s.return_policy_en || s.return_policy_bn) || '';
+  V(html`<div class="wrap" style="max-width:820px;padding:20px 0 60px"><div class="page-title"><h1>${t('policy')}</h1></div><div class="formbox" style="white-space:pre-wrap">${txt || t('policy_none')}</div></div>`);
+}
 const notFound = () => V(html`<div class="wrap"><div class="empty"><h2>404</h2><h3>${t('not_found')}</h3><a class="btn" href="/">${t('home')}</a></div></div>`);
 
 /* ===================== router ===================== */
@@ -408,7 +412,7 @@ const ROUTES = [
   [/^\/$/, pageHome], [/^\/shop$/, pageShop], [/^\/c\/([^/]+)$/, pageShop], [/^\/p\/([^/]+)$/, pagePDP],
   [/^\/cart$/, pageCart], [/^\/checkout$/, pageCheckout], [/^\/order\/([^/]+)$/, pageConfirm], [/^\/track$/, pageTrack],
   [/^\/login$/, pageLogin], [/^\/register$/, pageRegister], [/^\/forgot$/, pageForgot], [/^\/reset$/, pageReset],
-  [/^\/account(?:\/([a-z]+))?$/, pageAccount], [/^\/wishlist$/, () => wishlistInto(null)],
+  [/^\/account(?:\/([a-z]+))?$/, pageAccount], [/^\/wishlist$/, () => wishlistInto(null)], [/^\/policy$/, pagePolicy],
 ];
 function nav(href, replace) { history[replace ? 'replaceState' : 'pushState']({}, '', href); return render(); }
 async function render() {

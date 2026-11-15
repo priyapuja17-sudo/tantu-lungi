@@ -113,6 +113,10 @@ async function handle(req, res) {
 
   if (req.method !== 'GET' && req.method !== 'HEAD') return send(res, 405, 'Method Not Allowed');
 
+  if (pathname === '/healthz') { // liveness + DB check for the hosting platform; reveals nothing else
+    try { db.prepare('SELECT 1 AS ok').get(); return send(res, 200, '{"ok":true}', { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); }
+    catch { return send(res, 503, '{"ok":false}', { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); }
+  }
   let m;
   if (pathname === '/img/hero.svg') return send(res, 200, heroSVG(), { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'public, max-age=86400' });
   if ((m = /^\/img\/p\/(\d+)\/([0-3])\.svg$/.exec(pathname))) {

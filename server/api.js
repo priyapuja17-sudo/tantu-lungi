@@ -16,7 +16,7 @@ function route(method, pattern, handler, opts = {}) {
 }
 const needUser = (ctx) => { if (!ctx.user) throw new HttpError(401, 'Please log in.'); return ctx.user; };
 const PUBLIC_SETTINGS = ['store_name_en', 'store_name_bn', 'hero_title_bn', 'hero_sub_bn', 'hero_title_en', 'hero_sub_en', 'delivery_inside_dhaka', 'delivery_outside_dhaka', 'free_delivery_over',
-  'contact_phone', 'contact_email', 'contact_address_en', 'contact_address_bn', 'whatsapp_number', 'facebook_url', 'instagram_url'];
+  'contact_phone', 'contact_email', 'contact_address_en', 'contact_address_bn', 'whatsapp_number', 'facebook_url', 'instagram_url', 'return_policy_bn', 'return_policy_en'];
 
 /* ---------- storefront ---------- */
 route('GET', '/api/config', (ctx) => {

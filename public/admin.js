@@ -162,6 +162,7 @@ VIEWS.dashboard = async () => {
   const s = await api('/api/admin/stats');
   const max = Math.max(1, ...s.last14.map((d) => d.sales));
   set(html`${head('Dashboard')}
+  ${s.setup_missing.length ? html`<div class="alert info"><b>Finish setting up your store.</b> These are not filled in yet, so they are hidden from customers: ${s.setup_missing.join(', ')}. <a class="link" href="/admin/settings">Open Settings</a></div>` : ''}
   <div class="stats">
     <div class="stat"><small>Total sales</small><b>${tk(s.total_sales)}</b></div><div class="stat"><small>Total orders</small><b>${n0(s.total_orders)}</b></div>
     <div class="stat"><small>Customers</small><b>${n0(s.total_customers)}</b></div><div class="stat"><small>Products</small><b>${n0(s.total_products)}</b></div>
@@ -351,10 +352,11 @@ VIEWS.settings = async () => {
   <div class="panel"><h3>Mobile banking payments</h3><p class="small">Status now: ${['bkash', 'nagad', 'rocket'].map((k) => html`<span class="pill ${cfg.payments[k].enabled ? 'paid' : 'unpaid'}">${k}: ${cfg.payments[k].mode === 'gateway' ? 'gateway API' : cfg.payments[k].mode === 'manual' ? 'manual TrxID' : 'off'}</span> `)}</p>
   <p class="muted small">Gateway mode is switched on by server environment variables (see README) — it is not configurable here, so API secrets never touch the browser. <b>Manual mode:</b> enter your merchant "send money" number; customers pay and enter the TrxID, and you verify each payment from the order screen. Leave empty to hide the method.</p>
   ${G([['manual_bkash_number', 'bKash merchant number'], ['manual_nagad_number', 'Nagad merchant number'], ['manual_rocket_number', 'Rocket merchant number']])}</div>
+  <div class="panel"><h3>Return & refund policy</h3><p class="muted small">Shown on the /policy page and linked from the footer once filled in. Write what you will actually honour.</p>${['return_policy_bn:Policy (বাংলা)', 'return_policy_en:Policy (English)'].map((x) => { const [n, l] = x.split(':'); return fieldHTML({ n, l, t: 'textarea', rows: 6, full: true }, s); })}</div>
   ${isAdmin ? html`<button class="btn">Save settings</button>` : ''}</form>
   <div class="panel" style="margin-top:18px"><h3>Language</h3><p class="small">The storefront defaults to Bangla with an English switcher in the header (the visitor's choice is remembered). This admin panel is English-only.</p></div>`);
   $('#sform').addEventListener('submit', async (e) => { e.preventDefault(); try { await api('/api/admin/settings', { method: 'PUT', body: Object.fromEntries(new FormData(e.target)) }); toast('Settings saved'); } catch (er) { toast(er.message, 'err'); } });
-  if (!isAdmin) $$('#sform input').forEach((i) => { i.disabled = true; });
+  if (!isAdmin) $$('#sform input,#sform textarea').forEach((i) => { i.disabled = true; });
 };
 
 /* staff */
